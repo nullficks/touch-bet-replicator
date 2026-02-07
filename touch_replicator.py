@@ -180,18 +180,23 @@ class TouchReplicator:
             <style>
                 body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
                 h1 { color: #333; }
+                .disclaimer { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: #856404; }
                 .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
                 .signal { color: green; font-weight: bold; }
                 .metric { margin: 5px 0; }
                 .btn { display: inline-block; padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; margin-top: 10px; }
                 .instructions { margin-top: 15px; padding: 10px; background-color: #f9f9f9; border-left: 3px solid #ccc; }
                 .instructions h4 { margin-top: 0; color: #444; }
+                .risk-warning { color: red; font-weight: bold; margin-top: 10px; }
                 ol { padding-left: 20px; }
                 li { margin-bottom: 8px; }
             </style>
         </head>
         <body>
             <h1>Touch Bet Arbitrage Scanner</h1>
+            <div class="disclaimer">
+                <strong>DISCLAIMER:</strong> This tool provides information only, not investment advice. Cryptocurrency and derivatives trading involve substantial risk. Past performance does not guarantee future results. Do not invest more than you can afford to lose. Consult a qualified financial advisor before making investment decisions. No representation is made regarding the profitability of any strategy.
+            </div>
             <p>Last Updated: """ + datetime.now().strftime("%Y-%m-%d %H:%M UTC") + """</p>
             <p><em>Signals appear when Polymarket 'Yes' probability significantly exceeds Deribit's implied 'Touch' probability (via spread replication).</em></p>
         """
@@ -255,6 +260,10 @@ class TouchReplicator:
                         <li><em>(Preferred):</em> Use a 'Vertical Spread' order type if available, selecting the {leg1} (short) and {leg2} (long) legs. This ensures simultaneous execution.</li>
                         <li>Ensure adequate BTC collateral for the short call option.</li>
                     </ol>
+                </div>
+                
+                <div class="risk-warning">
+                    <strong>RISK WARNING:</strong> Options trading and crypto markets are highly risky. This is not financial advice. Trade at your own risk.
                 </div>
                 
                 <a href="{r['url']}" class="btn" target="_blank">View Market</a>
