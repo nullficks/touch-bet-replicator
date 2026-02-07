@@ -195,7 +195,7 @@ class TouchReplicator:
         <body>
             <h1>Touch Bet Arbitrage Scanner</h1>
             <div class="disclaimer">
-                <strong>DISCLAIMER:</strong> This tool provides information only, not investment advice. Cryptocurrency and derivatives trading involve substantial risk. Past performance does not guarantee future results. Do not invest more than you can afford to lose. Consult a qualified financial advisor before making investment decisions. No representation is made regarding the profitability of any strategy.
+                <strong>DISCLAIMER:</strong> This tool provides information only, not investment advice. Cryptocurrency and derivatives trading involve substantial risk. Past performance does not guarantee future results. Do not invest more than you can afford to lose. Consult a qualified financial advisor before making investment decisions. No representation is made regarding the profitability of any strategy. <em>This is Haram.</em>
             </div>
             <p>Last Updated: """ + datetime.now().strftime("%Y-%m-%d %H:%M UTC") + """</p>
             <p><em>Signals appear when Polymarket 'Yes' probability significantly exceeds Deribit's implied 'Touch' probability (via spread replication).</em></p>
