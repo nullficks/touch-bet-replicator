@@ -108,7 +108,7 @@ class TouchReplicator:
             }
         }
 
-    def scan(self):
+    def scan(self, html_output=False):
         print("=== Touch Bet Replicator (v2.0) ===")
         print("Fetching Deribit Data...")
         self.option_chain = self.deribit.get_option_chain_summary()
@@ -117,6 +117,7 @@ class TouchReplicator:
         poly_markets = self.poly_scanner.fetch_polymarket_touch_markets()
         
         opportunities = []
+        scan_results = []
         
         print(f"\nScanning {len(poly_markets)} Markets...\n")
         
@@ -127,7 +128,6 @@ class TouchReplicator:
             strike = details["strike"]
             poly_prob = details["poly_price"]
             
-            # Skip expired
             if details["expiry"] < datetime.now().strftime("%Y-%m-%d"): continue
 
             metrics = self.calculate_deribit_metrics(strike, details["expiry"])
@@ -136,17 +136,23 @@ class TouchReplicator:
             bs_prob = metrics["bs_prob"]
             spread_prob = metrics["spread_prob"]
             
-            # Comparison Logic
-            # If Poly > Models => Buy NO
-            # If Poly < Models => Buy YES (Rare)
-            
-            # Use Spread Prob as the "Execution" benchmark
-            # Use BS Prob as the "Theoretical" benchmark
-            
             ref_prob = spread_prob if spread_prob else bs_prob
             diff = poly_prob - ref_prob
             
-            # Display
+            result_item = {
+                "market": details["question"],
+                "expiry": details["expiry"],
+                "strike": strike,
+                "poly_prob": poly_prob,
+                "bs_prob": bs_prob,
+                "spread_prob": spread_prob,
+                "iv": metrics['details']['iv'],
+                "edge": diff,
+                "url": details["url"],
+                "spread_details": metrics['details']['spread'] if spread_prob else "N/A"
+            }
+            scan_results.append(result_item)
+            
             print(f"Market: {details['question']}")
             print(f"  Expiry: {details['expiry']} | Strike: {strike}")
             print(f"  Polymarket: {poly_prob:.1%}")
@@ -157,10 +163,61 @@ class TouchReplicator:
             
             if diff > 0.10:
                 print("  >>> SIGNAL: BUY NO (Overpriced)")
-                opportunities.append(details)
+                opportunities.append(result_item)
             
             print("-" * 30)
+            
+        if html_output:
+            self.generate_html(scan_results)
+
+    def generate_html(self, results):
+        """Generate a simple dashboard HTML file"""
+        html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Touch Bet Arbitrage Scanner</title>
+            <style>
+                body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
+                h1 { color: #333; }
+                .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+                .signal { color: green; font-weight: bold; }
+                .metric { margin: 5px 0; }
+                .btn { display: inline-block; padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; }
+            </style>
+        </head>
+        <body>
+            <h1>Touch Bet Arbitrage Scanner</h1>
+            <p>Last Updated: """ + datetime.now().strftime("%Y-%m-%d %H:%M UTC") + """</p>
+        """
+        
+        # Sort by edge descending
+        results.sort(key=lambda x: x["edge"], reverse=True)
+        
+        for r in results:
+            if r["edge"] < 0.05: continue # Filter noise
+            
+            signal_color = "green" if r["edge"] > 0.1 else "orange"
+            html += f"""
+            <div class="card" style="border-left: 5px solid {signal_color}">
+                <h3>{r['market']}</h3>
+                <div class="metric"><b>Edge:</b> <span style="color:{signal_color}">{r['edge']*100:.1f}%</span></div>
+                <div class="metric">Polymarket (Yes): {r['poly_prob']:.1%} | Deribit (Implied): {r['spread_prob'] if r['spread_prob'] else r['bs_prob']:.1%}</div>
+                <div class="metric">Strike: ${r['strike']:,} | Expiry: {r['expiry']}</div>
+                <div class="metric">Reference Spread: {r['spread_details']}</div>
+                <br>
+                <a href="{r['url']}" class="btn" target="_blank">View Market</a>
+            </div>
+            """
+            
+        html += "</body></html>"
+        
+        with open("index.html", "w") as f:
+            f.write(html)
+        print("Generated index.html")
 
 if __name__ == "__main__":
+    import sys
     scanner = TouchReplicator()
-    scanner.scan()
+    html_mode = "--html" in sys.argv
+    scanner.scan(html_output=html_mode)
