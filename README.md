@@ -21,3 +21,4 @@ A "No Touch" bet on Polymarket (betting NO) can be replicated/hedged using a **V
 - `deribit_connector.py`: Fetches Deribit option data.
 - `polymarket_touch_scanner.py`: Fetches Polymarket data.
 - `STRATEGY_TOUCH.md`: Detailed mathematical explanation.
+-  Haram
